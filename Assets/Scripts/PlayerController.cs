@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
     float speed = 200.0f;
 
     Rigidbody2D myRb;
+    private Animator animator;
+    BoxCollider2D collider;
 
     // this items represent the boots and the vest in that order
     bool[] itemInUse = { false, false };
@@ -20,7 +22,9 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 	// Used awake for this to avoid conflicts with null pointers when instantiating another player
 	void Awake () {
         myRb = GetComponent<Rigidbody2D>();
-	}
+        collider = GetComponent<BoxCollider2D>();
+        animator = GetComponent<Animator>();
+    }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
@@ -30,7 +34,15 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         myRb.MovePosition(finalPosition);
         */
         myRb.velocity = new Vector2(speed * Time.deltaTime, myRb.velocity.y);
-	}
+        if (myRb.velocity.y < 0)
+        {
+            animator.SetBool("falling", true);
+        }
+        else
+        {
+            animator.SetBool("falling", false);
+        }
+    }
 
     private void NeutralGravity()
     {
@@ -127,7 +139,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
     {
         if(collision.tag.Equals("Hazard"))
         {
-            Die();
+            if (!dead) Die();
         }
     }
 
@@ -136,8 +148,10 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         dead = true;
         PowerManager.Instance.DeleteFromLists(gameObject);
         // set the layer to dead player to avoid him colliding with anything but the floor and walls
-        gameObject.layer = 8;
+        //gameObject.layer = 8;
         gameObject.tag = "Dead Player";
+        animator.SetBool("dead", true);
+        collider.size = new Vector2(2.25f, 0.9f);
         myRb.velocity = Vector2.zero;
         GameManager.Instance.SpawnPlayer();
         enabled = false;
