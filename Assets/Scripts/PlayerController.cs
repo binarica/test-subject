@@ -35,7 +35,11 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         collider = GetComponent<BoxCollider2D>();
         animator = GetComponent<Animator>();
         deathTimer = GetComponent<CountdownTimer>();
+<<<<<<< HEAD
         layerMask = (1 << 11) | (1 << 10);//Juan: inicializo los layers a usar por los raycasts.
+=======
+        layerMask = (1 << 11) | (1 << 10);//Juan: inicializo los layers a usar por los raycasts
+>>>>>>> 856a500cd9cb441f6add8e3335e9b60aebfaec47
 
     }
 	
