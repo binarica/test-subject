@@ -6,10 +6,18 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 
     [SerializeField]
     float speed = 200.0f;
+    public float jumpPower=0.03f;//Juan
+    public LayerMask groundLayer;//Juan
+    public LayerMask ObstaclesLayer;//Juan
+    
 
-    Rigidbody2D myRb;
     private Animator animator;
-    BoxCollider2D collider;
+    new private BoxCollider2D collider;
+    Rigidbody2D myRb;
+
+    bool dead = false;//juan
+    bool jumped = false;//juan
+    int layerMask;//juan
 
     // this items represent the boots and the vest in that order
     bool[] itemInUse = { false, false };
@@ -17,13 +25,18 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
     // this stores the previous status for each power
     int[] status = { 1, 1 };
 
-    bool dead = false;
 
-	// Used awake for this to avoid conflicts with null pointers when instantiating another player
-	void Awake () {
+    CountdownTimer deathTimer;
+    private float movement;
+
+    // Used awake for this to avoid conflicts with null pointers when instantiating another player
+    void Awake () {
         myRb = GetComponent<Rigidbody2D>();
         collider = GetComponent<BoxCollider2D>();
         animator = GetComponent<Animator>();
+        deathTimer = GetComponent<CountdownTimer>();
+        layerMask = (1 << 11) | (1 << 10);//Juan: inicializo los layers a usar por los raycasts
+
     }
 	
 	// Update is called once per frame
@@ -33,14 +46,52 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         finalPosition.x += speed * Time.deltaTime;
         myRb.MovePosition(finalPosition);
         */
+
+        /*Juan: TODO: esto no me gusta asi
+         Si hay otro slope el timer no se va a reiniciar 
+         estaria bueno que si no puede saltar deje de intentarlo.*/
+        if (!deathTimer.isCountingDown && deathTimer.WasActive && IsSloped())
+        {
+            Die();
+        }
+        else if (!deathTimer.isCountingDown && deathTimer.WasActive)
+        {
+            deathTimer.WasActive = false;
+        }
+
+        if (!IsGrounded() && !jumped)//Juan: Chequeo si debe saltar 
+        {
+            myRb.AddForce(Vector2.up * jumpPower);
+            jumped = true;
+        }
+        else if (IsGrounded() && jumped)
+        {
+            jumped = false;
+        }
+
+        if (IsSloped() && !jumped)//Juan: Chequeo si debe saltar 
+        {
+            myRb.AddForce(Vector2.up * jumpPower);
+            jumped = true;
+
+            if (!deathTimer.WasActive) deathTimer.Begin(3);
+        }
+        
         myRb.velocity = new Vector2(speed * Time.deltaTime, myRb.velocity.y);
-        if (myRb.velocity.y < 0)
+
+        movement = myRb.velocity.magnitude;
+
+        
+
+        if (myRb.velocity.y < -0.1)//juan
         {
             animator.SetBool("falling", true);
+            animator.SetBool("walking", false);
         }
         else
         {
             animator.SetBool("falling", false);
+            animator.SetBool("walking", true);
         }
     }
 
@@ -135,6 +186,35 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         }
     }
 
+    bool IsGrounded()//Juan
+    {
+        Vector2 position =new Vector2 (transform.position.x,transform.position.y-0.5f);
+        Vector2 direction =new Vector2 (1f,-1.5f);
+        float distance = 1f;
+        Debug.DrawRay(position, direction, Color.green,20,true);
+        RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, layerMask);
+        if (hit.collider != null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool IsSloped()
+    {
+        Vector2 position = new Vector2(transform.position.x+0.2f, transform.position.y-0.6f);
+        Vector2 direction = Vector2.right;
+        float distance = 1f;
+        Debug.DrawRay(position, direction, Color.red, 20, true);
+        RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, layerMask);
+        if (hit.collider != null)
+        {
+            return true;
+        }
+
+        return false;
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if(collision.tag.Equals("Hazard"))
@@ -148,10 +228,11 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         dead = true;
         PowerManager.Instance.DeleteFromLists(gameObject);
         // set the layer to dead player to avoid him colliding with anything but the floor and walls
-        //gameObject.layer = 8;
+        gameObject.layer = 11;//Juan: lo pongo en el layer interactive asi el raycast lo detecta
         gameObject.tag = "Dead Player";
         animator.SetBool("dead", true);
         collider.size = new Vector2(2.25f, 0.9f);
+        collider.offset = new Vector2(0f, 0f);
         myRb.velocity = Vector2.zero;
         GameManager.Instance.SpawnPlayer();
         enabled = false;
