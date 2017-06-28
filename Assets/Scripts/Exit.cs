@@ -8,13 +8,9 @@ public class Exit : MonoBehaviour {
 
     private Animator animator;
 
-    private void Awake()
-    {
-        animator = GetComponent<Animator>();
-    }
     public void PlayAnim(bool open)
     {
-        
+        animator = GetComponent<Animator>();
         animator.SetBool("Open", open);
     }
 

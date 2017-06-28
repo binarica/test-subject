@@ -6,7 +6,7 @@ public class ButtonScript : MonoBehaviour {
 
     List<GameObject> stepping = new List<GameObject>();
     [SerializeField]
-    Exit exit;
+    public Exit exit;
 
     private void OnTriggerStay2D(Collider2D collision)
     {
