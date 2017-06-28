@@ -49,15 +49,20 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-        /*
-        Vector2 finalPosition = myRb.position;
-        finalPosition.x += speed * Time.deltaTime;
-        myRb.MovePosition(finalPosition);
-        */
 
+        DoAI();
+
+        Move();
+
+        Animate();
+
+    }
+
+    private void DoAI()
+    {
         /*Juan: TODO: esto no me gusta asi
-         Si hay otro slope el timer no se va a reiniciar 
-         estaria bueno que si no puede saltar deje de intentarlo.*/
+          Si hay otro slope el timer no se va a reiniciar. 
+          Tambien estaria bueno que si no puede saltar deje de intentarlo.*/
         if (!deathTimer.isCountingDown && deathTimer.WasActive && IsSloped())
         {
             Die();
@@ -84,12 +89,27 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 
             if (!deathTimer.WasActive) deathTimer.Begin(3);
         }
-        
+    }
+
+    private void Move()
+    {
+        /*
+        Vector2 finalPosition = myRb.position;
+        finalPosition.x += speed * Time.deltaTime;
+        myRb.MovePosition(finalPosition);
+        */
+
         myRb.velocity = new Vector2(speed * Time.deltaTime, myRb.velocity.y);
+    }
 
-              
-
-        if (myRb.velocity.y < -0.1)//juan
+    private void Animate()
+    {
+        if (myRb.velocity.x <= 0 && myRb.velocity.x >= -0.1 && myRb.velocity.y == 0)//juan
+        {
+            animator.SetBool("falling", false);
+            animator.SetBool("walking", false);
+        }
+        else if (myRb.velocity.y < -0.1)//juan
         {
             animator.SetBool("falling", true);
             animator.SetBool("walking", false);
@@ -234,7 +254,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         dead = true;
         PowerManager.Instance.DeleteFromLists(gameObject);
         // set the layer to dead player to avoid him colliding with anything but the floor and walls
-        gameObject.layer = 11;//Juan: lo pongo en el layer interactive asi el raycast lo detecta
+        gameObject.layer = 8;
         gameObject.tag = "Dead Player";
         animator.SetBool("dead", true);
         collider.size = new Vector2(2.25f, 0.9f);
