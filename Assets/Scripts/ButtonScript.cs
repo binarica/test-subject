@@ -17,6 +17,7 @@ public class ButtonScript : MonoBehaviour {
         if(stepping.Count > 0)
         {
             exit.open = true;
+            exit.PlayAnim(true);
             Debug.Log("Door is open");
         }
     }
@@ -27,6 +28,7 @@ public class ButtonScript : MonoBehaviour {
         if(stepping.Count == 0)
         {
             exit.open = false;
+            //exit.PlayAnim(false);
             Debug.Log("Door is closed");
         }
     }

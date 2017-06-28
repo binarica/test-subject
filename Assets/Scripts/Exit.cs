@@ -4,8 +4,16 @@ public class Exit : MonoBehaviour {
 
     [SerializeField]
     GameObject youWon;
+    public bool open;
 
-    public bool open = false;
+    private Animator animator;
+
+    
+    public void PlayAnim(bool open)
+    {
+        animator = GetComponent<Animator>();
+        animator.SetBool("Open", open);
+    }
 
     private void OnTriggerStay2D(Collider2D collision)
     {
