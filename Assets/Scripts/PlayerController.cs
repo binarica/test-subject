@@ -27,7 +27,6 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 
 
     CountdownTimer deathTimer;
-    private float movement;
 
     // Used awake for this to avoid conflicts with null pointers when instantiating another player
     void Awake () {
@@ -35,11 +34,16 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         collider = GetComponent<BoxCollider2D>();
         animator = GetComponent<Animator>();
         deathTimer = GetComponent<CountdownTimer>();
-<<<<<<< HEAD
+
+        /*En realidad en vez de 11 y 10 deberia obtener el numero de layer de las propiedades: 
+         * public LayerMask groundLayer;
+         * public LayerMask ObstaclesLayer;
+         * por ahora lo deje asi.
+        */
         layerMask = (1 << 11) | (1 << 10);//Juan: inicializo los layers a usar por los raycasts.
-=======
-        layerMask = (1 << 11) | (1 << 10);//Juan: inicializo los layers a usar por los raycasts
->>>>>>> 856a500cd9cb441f6add8e3335e9b60aebfaec47
+
+        layerMask = (1 << 11) | (1 << 10);//Juan: inicializo los layers a usar por los raycasts.
+
 
     }
 	
@@ -83,9 +87,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         
         myRb.velocity = new Vector2(speed * Time.deltaTime, myRb.velocity.y);
 
-        movement = myRb.velocity.magnitude;
-
-        
+              
 
         if (myRb.velocity.y < -0.1)//juan
         {
