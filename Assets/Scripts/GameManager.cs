@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour {
     
     public void SpawnPlayer()
     {
+        PowerManager.Instance.ResetToOriginalState();
         GameObject player = spawner.InstantiatePlayer();
         cameraControl.SetPlayer(player);
         PowerManager.Instance.ResetPlayer(player);
