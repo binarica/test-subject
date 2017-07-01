@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
     private Animator animator;
     new private BoxCollider2D collider;
     Rigidbody2D myRb;
+    RaycastHit2D lastHit;
 
     bool dead = false;//juan
     bool jumped = false;//juan
@@ -34,6 +35,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         collider = GetComponent<BoxCollider2D>();
         animator = GetComponent<Animator>();
         deathTimer = GetComponent<CountdownTimer>();
+        lastHit = new RaycastHit2D();
 
         /*En realidad en vez de 11 y 10 deberia obtener el numero de layer de las propiedades: 
          * public LayerMask groundLayer;
@@ -74,7 +76,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 
         if (!IsGrounded() && !jumped)//Juan: Chequeo si debe saltar 
         {
-            myRb.AddForce(Vector2.up * jumpPower);
+            if (myRb.velocity.y <= 0) myRb.AddForce(Vector2.up * jumpPower);
             jumped = true;
         }
         else if (IsGrounded() && jumped)
@@ -84,7 +86,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 
         if (IsSloped() && !jumped)//Juan: Chequeo si debe saltar 
         {
-            myRb.AddForce(Vector2.up * jumpPower);
+            if (myRb.velocity.y <= 0) myRb.AddForce(Vector2.up * jumpPower);
             jumped = true;
 
             if (!deathTimer.WasActive) deathTimer.Begin(3);
@@ -219,6 +221,10 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         float distance = 1f;
         Debug.DrawRay(position, direction, Color.green,20,true);
         RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, layerMask);
+        if (hit != lastHit)
+        {
+            if (deathTimer.isCountingDown) deathTimer.Begin(3);
+        }
         if (hit.collider != null)
         {
             return true;
@@ -234,6 +240,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         float distance = 1f;
         Debug.DrawRay(position, direction, Color.red, 20, true);
         RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, layerMask);
+        
         if (hit.collider != null)
         {
             return true;
@@ -254,7 +261,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         dead = true;
         PowerManager.Instance.DeleteFromLists(gameObject);
         // set the layer to dead player to avoid him colliding with anything but the floor and walls
-        gameObject.layer = 8;
+        gameObject.layer = 11;
         gameObject.tag = "Dead Player";
         animator.SetBool("dead", true);
         collider.size = new Vector2(2.25f, 0.9f);
