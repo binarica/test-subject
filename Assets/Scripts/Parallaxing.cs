@@ -28,7 +28,7 @@ public class Parallaxing : MonoBehaviour {
 
 		foreach (Transform back in background)
         {
-            parallaxScale= background[0].position.z * -1;
+            parallaxScale= back.position.z * -1;
             // the parallax is the opposite of the camera movement because the previous frame multiplied by the scale
             float parallax = (previousCamPos.x - cam.position.x) * parallaxScale;
             float parallaxY = (previousCamPos.y - cam.position.y) * parallaxScale;
