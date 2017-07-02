@@ -5,10 +5,21 @@ using UnityEngine;
 public class ButtonScript : MonoBehaviour {
 
     List<GameObject> stepping = new List<GameObject>();
+    
     [SerializeField]
     public Exit exit;
+    public Sprite pressed;
+    public Sprite notPressed;
 
-    private void OnTriggerStay2D(Collider2D collision)
+    SpriteRenderer spriteRenderer;
+
+    void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+
+        private void OnTriggerStay2D(Collider2D collision)
     {
         if (!stepping.Contains(collision.gameObject))
         {
@@ -18,6 +29,7 @@ public class ButtonScript : MonoBehaviour {
         {
             exit.open = true;
             exit.PlayAnim(true);
+            spriteRenderer.sprite = pressed;
             Debug.Log("Door is open");
         }
     }
@@ -27,8 +39,9 @@ public class ButtonScript : MonoBehaviour {
         stepping.Remove(collision.gameObject);
         if(stepping.Count == 0)
         {
+            spriteRenderer.sprite = notPressed;
             exit.open = false;
-            //exit.PlayAnim(false);
+            exit.PlayAnim(false);
             Debug.Log("Door is closed");
         }
     }

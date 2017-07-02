@@ -16,6 +16,8 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
     Rigidbody2D myRb;
     RaycastHit2D lastHit;
 
+
+    int waterID;
     bool dead = false;//juan
     bool jumped = false;//juan
     int layerMask;//juan
@@ -36,6 +38,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         animator = GetComponent<Animator>();
         deathTimer = GetComponent<CountdownTimer>();
         lastHit = new RaycastHit2D();
+        waterID = 0;
 
         /*En realidad en vez de 11 y 10 deberia obtener el numero de layer de las propiedades: 
          * public LayerMask groundLayer;
@@ -65,7 +68,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         /*Juan: TODO: esto no me gusta asi
           Si hay otro slope el timer no se va a reiniciar. 
           Tambien estaria bueno que si no puede saltar deje de intentarlo.*/
-        if (!deathTimer.isCountingDown && deathTimer.WasActive && IsSloped())
+        if ((!deathTimer.isCountingDown && deathTimer.WasActive) && (IsSloped() || waterID != 0))
         {
             Die();
         }
@@ -73,7 +76,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         {
             deathTimer.WasActive = false;
         }
-
+        
         if (!IsGrounded() && !jumped)//Juan: Chequeo si debe saltar 
         {
             if (myRb.velocity.y <= 0) myRb.AddForce(Vector2.up * jumpPower);
@@ -235,7 +238,7 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
 
     bool IsSloped()
     {
-        Vector2 position = new Vector2(transform.position.x+0.2f, transform.position.y-0.6f);
+        Vector2 position = new Vector2(transform.position.x+0.2f, transform.position.y-0.75f);
         Vector2 direction = Vector2.right;
         float distance = 1f;
         Debug.DrawRay(position, direction, Color.red, 20, true);
@@ -254,6 +257,13 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         {
             if (!dead) Die();
         }
+        else if (collision.tag.Equals("Water"))
+        {
+
+            if (!deathTimer.isCountingDown && waterID != collision.GetInstanceID()) deathTimer.Begin(2);
+            waterID = collision.GetInstanceID();
+            
+        }
     }
 
     public void Die()
@@ -261,11 +271,12 @@ public class PlayerController : MonoBehaviour, IGravitable, ITemperaturable {
         dead = true;
         PowerManager.Instance.DeleteFromLists(gameObject);
         // set the layer to dead player to avoid him colliding with anything but the floor and walls
-        gameObject.layer = 11;
+        gameObject.layer = 8;
         gameObject.tag = "Dead Player";
         animator.SetBool("dead", true);
         collider.size = new Vector2(2.25f, 0.9f);
         collider.offset = new Vector2(0f, 0f);
+        speed = 0;
         myRb.velocity = Vector2.zero;
         GameManager.Instance.SpawnPlayer();
         enabled = false;

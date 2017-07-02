@@ -25,7 +25,8 @@ public class CameraControl : MonoBehaviour {
         if (player != null)
         {
             Vector3 curPos = player.transform.position + offset;
-            curPos.y = transform.position.y;
+            curPos.y = player.transform.position.y;
+            
             transform.position = curPos;
         }
     }
